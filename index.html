@@ -27,6 +27,12 @@
     h1 {
       text-align: center;
       color: #263b70;
+      cursor: default;
+      user-select: none;
+    }
+
+    h1 span {
+      cursor: pointer;
     }
 
     .subtitle {
@@ -66,6 +72,11 @@
       background: #606b80;
     }
 
+    .section-title {
+      margin-top: 25px;
+      font-weight: bold;
+    }
+
     #output {
       min-height: 80px;
       padding: 14px;
@@ -73,11 +84,7 @@
       border-radius: 9px;
       overflow-wrap: anywhere;
       line-height: 1.7;
-    }
-
-    .section-title {
-      margin-top: 25px;
-      font-weight: bold;
+      white-space: pre-wrap;
     }
 
     #status {
@@ -85,50 +92,145 @@
       color: #304b91;
       margin-top: 12px;
     }
+
+    /* 비밀번호 화면 */
+    #loginScreen {
+      max-width: 400px;
+      margin: 10vh auto;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px #00000010;
+      text-align: center;
+    }
+
+    #loginScreen h2 {
+      color: #263b70;
+    }
+
+    #passwordInput {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 9px;
+      font-size: 16px;
+      margin-top: 12px;
+    }
+
+    #loginStatus {
+      color: #b33;
+      margin-top: 12px;
+      min-height: 20px;
+    }
+
+    /* 이스터에그 */
+    #secretMessage {
+      position: fixed;
+      bottom: 12px;
+      left: 14px;
+      font-size: 11px;
+      line-height: 1.6;
+      color: #777;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 1.5s;
+    }
+
+    #secretMessage.show {
+      opacity: 0.45;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>W924</h1>
+
+  <!-- 비밀번호 화면 -->
+  <div id="loginScreen">
+    <h2>W924</h2>
+    <p class="subtitle">PRIVATE ACCESS</p>
+
+    <input
+      type="password"
+      id="passwordInput"
+      placeholder="비밀번호를 입력하세요."
+      onkeydown="if(event.key === 'Enter') checkPassword()"
+    >
+
+    <button onclick="checkPassword()">입장하기</button>
+
+    <p id="loginStatus"></p>
+  </div>
+
+  <!-- 메인 화면 -->
+  <div class="container" id="mainApp" hidden>
+    <h1>
+      W<span onclick="secretClick('9')">9</span><span onclick="secretClick('2')">2</span><span onclick="secretClick('4')">4</span>
+    </h1>
+
     <p class="subtitle">W924 TEXT ENCRYPTION</p>
 
-    <p class="section-title">원문 입력</p>
-    <textarea id="input" placeholder="암호화할 문장을 입력하세요."></textarea>
+    <p class="section-title">원문 또는 암호문 입력</p>
+    <textarea
+      id="input"
+      placeholder="암호화하거나 복호화할 문장을 입력하세요."
+    ></textarea>
 
     <button onclick="encrypt()">암호화</button>
+    <button onclick="decrypt()">복호화</button>
 
-    <p class="section-title">암호화 결과</p>
+    <p class="section-title">결과</p>
     <div id="output">결과가 여기에 표시됩니다.</div>
 
-    <button class="copy" onclick="copyResult()">암호문 복사</button>
+    <button class="copy" onclick="copyResult()">결과 복사</button>
 
     <p id="status"></p>
   </div>
 
+  <!-- 이스터에그 메시지 -->
+  <div id="secretMessage">
+    이스터에그!<br>
+    이원호는 아직 민채를 좋아합니다.<br>
+    언제까지일지는 모르겠지만, 영원했으면 좋겠어요.
+  </div>
+
   <script>
-    // W924 암호화 함수
+    // 비밀번호 확인
+    function checkPassword() {
+      const password = document.getElementById("passwordInput").value;
+      const loginStatus = document.getElementById("loginStatus");
+
+      if (password === "민채") {
+        document.getElementById("loginScreen").hidden = true;
+        document.getElementById("mainApp").hidden = false;
+      } else {
+        loginStatus.textContent = "비밀번호가 올바르지 않습니다.";
+      }
+    }
+
+    // W924 암호화
     function encryptW924(text) {
       const result = [];
 
       for (const char of text) {
         const code = char.codePointAt(0);
 
-        // W924는 4자리 유니코드 범위 사용
         if (code > 0xFFFF) {
           throw new Error(
             "4자리 유니코드 범위를 벗어난 문자가 포함되어 있습니다."
           );
         }
 
-        // 유니코드 16진수 4자리 변환
-        let hex = code
+        const hex = code
           .toString(16)
           .toUpperCase()
           .padStart(4, "0");
 
-        // 2번째와 3번째 자리 교환
-        let encrypted =
+        const encrypted =
           hex[0] + hex[2] + hex[1] + hex[3];
 
         result.push(encrypted);
@@ -137,50 +239,127 @@
       return result.join(" ");
     }
 
-    // 암호화 버튼
-    function encrypt() {
+    // W924 복호화
+    function decryptW924(text) {
+      const result = [];
+      const tokens = text.trim().split(/\s+/);
+
+      for (const token of tokens) {
+        if (!/^[0-9A-Fa-f]{4}$/.test(token)) {
+          throw new Error(
+            "올바르지 않은 암호문입니다. 4자리 16진수인지 확인해주세요."
+          );
+        }
+
+        const hex =
+          token[0] + token[2] + token[1] + token[3];
+
+        result.push(String.fromCharCode(parseInt(hex, 16)));
+      }
+
+      return result.join("");
+    }
+
+    // 결과 표시
+    function showResult(action) {
       const input = document.getElementById("input").value;
       const output = document.getElementById("output");
       const status = document.getElementById("status");
 
-      try {
-        if (input.length === 0) {
-          output.textContent = "문장을 먼저 입력해주세요.";
-          status.textContent = "";
-          return;
-        }
+      if (input.length === 0) {
+        output.textContent = "문장을 먼저 입력해주세요.";
+        status.textContent = "";
+        return;
+      }
 
-        output.textContent = encryptW924(input);
-        status.textContent = "암호화 완료!";
+      try {
+        output.textContent =
+          action === "encrypt"
+            ? encryptW924(input)
+            : decryptW924(input);
+
+        status.textContent =
+          action === "encrypt"
+            ? "암호화 완료!"
+            : "복호화 완료!";
       } catch (error) {
         output.textContent = error.message;
         status.textContent = "";
       }
     }
 
-    // 결과 복사 버튼
+    function encrypt() {
+      showResult("encrypt");
+    }
+
+    function decrypt() {
+      showResult("decrypt");
+    }
+
+    // 결과 복사
     async function copyResult() {
       const output = document.getElementById("output").textContent;
+      const status = document.getElementById("status");
 
       if (
         output === "결과가 여기에 표시됩니다." ||
         output === "문장을 먼저 입력해주세요." ||
-        output.startsWith("4자리 유니코드")
+        output.startsWith("4자리 유니코드") ||
+        output.startsWith("올바르지 않은 암호문")
       ) {
-        document.getElementById("status").textContent =
-          "복사할 암호문이 없습니다.";
+        status.textContent = "복사할 결과가 없습니다.";
         return;
       }
 
       try {
         await navigator.clipboard.writeText(output);
-        document.getElementById("status").textContent =
-          "암호문을 복사했습니다!";
+        status.textContent = "결과를 복사했습니다!";
       } catch (error) {
-        document.getElementById("status").textContent =
+        status.textContent =
           "복사에 실패했습니다. 브라우저 권한을 확인해주세요.";
       }
     }
+
+    // 이스터에그: 9번 → 2번 → 4번
+    let secretStep = 0;
+    let clickCount = 0;
+
+    const secretSequence = [
+      { number: "9", count: 9 },
+      { number: "2", count: 2 },
+      { number: "4", count: 4 }
+    ];
+
+    function secretClick(number) {
+      if (secretStep >= secretSequence.length) {
+        return;
+      }
+
+      const current = secretSequence[secretStep];
+
+      if (number === current.number) {
+        clickCount++;
+
+        if (clickCount === current.count) {
+          secretStep++;
+          clickCount = 0;
+
+          if (secretStep === secretSequence.length) {
+            document
+              .getElementById("secretMessage")
+              .classList.add("show");
+          }
+        }
+      } else {
+        secretStep = number === "9" ? 0 : 0;
+        clickCount = 0;
+
+        if (number === "9") {
+          clickCount = 1;
+        }
+      }
+    }
   </script>
+
 </body>
 </html>
