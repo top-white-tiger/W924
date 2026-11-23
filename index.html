@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>W924 암호화 도구</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f5fa;
+      margin: 0;
+      padding: 40px 20px;
+      color: #222;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px #00000010;
+    }
+
+    h1 {
+      text-align: center;
+      color: #263b70;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #777;
+      margin-bottom: 30px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      box-sizing: border-box;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 9px;
+      font-size: 16px;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 9px;
+      background: #304b91;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #20376e;
+    }
+
+    .copy {
+      background: #606b80;
+    }
+
+    #output {
+      min-height: 80px;
+      padding: 14px;
+      background: #f0f2f7;
+      border-radius: 9px;
+      overflow-wrap: anywhere;
+      line-height: 1.7;
+    }
+
+    .section-title {
+      margin-top: 25px;
+      font-weight: bold;
+    }
+
+    #status {
+      text-align: center;
+      color: #304b91;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>W924</h1>
+    <p class="subtitle">W924 TEXT ENCRYPTION</p>
+
+    <p class="section-title">원문 입력</p>
+    <textarea id="input" placeholder="암호화할 문장을 입력하세요."></textarea>
+
+    <button onclick="encrypt()">암호화</button>
+
+    <p class="section-title">암호화 결과</p>
+    <div id="output">결과가 여기에 표시됩니다.</div>
+
+    <button class="copy" onclick="copyResult()">암호문 복사</button>
+
+    <p id="status"></p>
+  </div>
+
+  <script>
+    // W924 암호화 함수
+    function encryptW924(text) {
+      const result = [];
+
+      for (const char of text) {
+        const code = char.codePointAt(0);
+
+        // W924는 4자리 유니코드 범위 사용
+        if (code > 0xFFFF) {
+          throw new Error(
+            "4자리 유니코드 범위를 벗어난 문자가 포함되어 있습니다."
+          );
+        }
+
+        // 유니코드 16진수 4자리 변환
+        let hex = code
+          .toString(16)
+          .toUpperCase()
+          .padStart(4, "0");
+
+        // 2번째와 3번째 자리 교환
+        let encrypted =
+          hex[0] + hex[2] + hex[1] + hex[3];
+
+        result.push(encrypted);
+      }
+
+      return result.join(" ");
+    }
+
+    // 암호화 버튼
+    function encrypt() {
+      const input = document.getElementById("input").value;
+      const output = document.getElementById("output");
+      const status = document.getElementById("status");
+
+      try {
+        if (input.length === 0) {
+          output.textContent = "문장을 먼저 입력해주세요.";
+          status.textContent = "";
+          return;
+        }
+
+        output.textContent = encryptW924(input);
+        status.textContent = "암호화 완료!";
+      } catch (error) {
+        output.textContent = error.message;
+        status.textContent = "";
+      }
+    }
+
+    // 결과 복사 버튼
+    async function copyResult() {
+      const output = document.getElementById("output").textContent;
+
+      if (
+        output === "결과가 여기에 표시됩니다." ||
+        output === "문장을 먼저 입력해주세요." ||
+        output.startsWith("4자리 유니코드")
+      ) {
+        document.getElementById("status").textContent =
+          "복사할 암호문이 없습니다.";
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(output);
+        document.getElementById("status").textContent =
+          "암호문을 복사했습니다!";
+      } catch (error) {
+        document.getElementById("status").textContent =
+          "복사에 실패했습니다. 브라우저 권한을 확인해주세요.";
+      }
+    }
+  </script>
+</body>
+</html>
