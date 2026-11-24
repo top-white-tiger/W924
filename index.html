@@ -7,12 +7,17 @@
   <title>W924 암호화 도구</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
       background: #f3f5fa;
       margin: 0;
       padding: 40px 20px;
       color: #222;
+      transition: background 0.5s;
     }
 
     .container {
@@ -44,7 +49,6 @@
     textarea {
       width: 100%;
       height: 120px;
-      box-sizing: border-box;
       padding: 14px;
       border: 1px solid #ccc;
       border-radius: 9px;
@@ -102,6 +106,7 @@
       border-radius: 16px;
       box-shadow: 0 4px 20px #00000010;
       text-align: center;
+      position: relative;
     }
 
     #loginScreen h2 {
@@ -110,7 +115,6 @@
 
     #passwordInput {
       width: 100%;
-      box-sizing: border-box;
       padding: 14px;
       border: 1px solid #ccc;
       border-radius: 9px;
@@ -122,6 +126,48 @@
       color: #b33;
       margin-top: 12px;
       min-height: 20px;
+    }
+
+    /* 힌트 */
+    #hintArea {
+      margin-top: 20px;
+    }
+
+    #hintButton {
+      background: #606b80;
+    }
+
+    #hintText {
+      display: none;
+      margin-top: 14px;
+      padding: 14px;
+      background: #f0f2f7;
+      border-radius: 9px;
+      color: #304b91;
+    }
+
+    /* 재입력 화면의 경고 */
+    #warningText {
+      position: fixed;
+      bottom: 14px;
+      right: 16px;
+      font-size: 12px;
+      color: #555;
+      opacity: 0.25;
+      pointer-events: none;
+      display: none;
+    }
+
+    /* 마지막 안내 */
+    #finalNotice {
+      display: none;
+      margin-top: 24px;
+      padding: 13px;
+      background: #f0f2f7;
+      border-radius: 9px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #666;
     }
 
     /* 이스터에그 */
@@ -141,6 +187,56 @@
       opacity: 0.45;
     }
 
+    /* 공포 연출 화면 */
+    #horrorScreen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #080808;
+      overflow: hidden;
+    }
+
+    #horrorTitle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #ff1717;
+      font-size: clamp(28px, 7vw, 72px);
+      font-weight: 900;
+      white-space: nowrap;
+      text-align: center;
+      z-index: 2;
+      animation: titleShake 0.09s infinite;
+    }
+
+    .horrorText {
+      position: absolute;
+      color: #ff1717;
+      font-weight: 900;
+      white-space: nowrap;
+      font-size: clamp(18px, 4vw, 42px);
+      animation: textShake 0.12s infinite alternate;
+      user-select: none;
+    }
+
+    @keyframes titleShake {
+      0% { transform: translate(-50%, -50%) rotate(-1deg); }
+      25% { transform: translate(-51%, -49%) rotate(1deg); }
+      50% { transform: translate(-49%, -51%) rotate(-1.5deg); }
+      75% { transform: translate(-50%, -50%) rotate(1deg); }
+      100% { transform: translate(-51%, -50%) rotate(0deg); }
+    }
+
+    @keyframes textShake {
+      0% { transform: translate(0, 0) rotate(-2deg) scale(1); }
+      25% { transform: translate(3px, -2px) rotate(2deg) scale(1.03); }
+      50% { transform: translate(-3px, 2px) rotate(-1deg) scale(1.06); }
+      75% { transform: translate(2px, 3px) rotate(2deg) scale(1.02); }
+      100% { transform: translate(-2px, -3px) rotate(-2deg) scale(1.08); }
+    }
+
     [hidden] {
       display: none !important;
     }
@@ -158,13 +254,27 @@
       type="password"
       id="passwordInput"
       placeholder="비밀번호를 입력하세요."
+      autocomplete="off"
       onkeydown="if(event.key === 'Enter') checkPassword()"
     >
 
     <button onclick="checkPassword()">입장하기</button>
 
     <p id="loginStatus"></p>
+
+    <div id="hintArea" hidden>
+      <button id="hintButton" onclick="showHint()">힌트 보기</button>
+      <div id="hintText">힌트: 1234입니다.</div>
+    </div>
+
+    <div id="finalNotice">
+      힌트를 더 알고 싶으신가요?<br>
+      지금 화면을 캡처하여 원호에게 물어보세요!
+    </div>
   </div>
+
+  <!-- 재입력 경고 -->
+  <div id="warningText">입력하면 안 돼</div>
 
   <!-- 메인 화면 -->
   <div class="container" id="mainApp" hidden>
@@ -175,6 +285,7 @@
     <p class="subtitle">W924 TEXT ENCRYPTION</p>
 
     <p class="section-title">원문 또는 암호문 입력</p>
+
     <textarea
       id="input"
       placeholder="암호화하거나 복호화할 문장을 입력하세요."
@@ -191,7 +302,13 @@
     <p id="status"></p>
   </div>
 
-  <!-- 이스터에그 메시지 -->
+  <!-- 공포 연출 -->
+  <div id="horrorScreen">
+    <div id="horrorTitle">안 된다고 했잖아.</div>
+    <div id="horrorTexts"></div>
+  </div>
+
+  <!-- 이스터에그 -->
   <div id="secretMessage">
     이스터에그!<br>
     이원호는 아직 민채를 좋아합니다.<br>
@@ -199,17 +316,116 @@
   </div>
 
   <script>
+    // 비밀번호 상태
+    let confirmationMode = false;
+    let hintUsed = false;
+    let horrorStarted = false;
+
     // 비밀번호 확인
     function checkPassword() {
-      const password = document.getElementById("passwordInput").value;
+      if (horrorStarted) return;
+
+      const input = document.getElementById("passwordInput");
+      const password = input.value.trim().toUpperCase();
       const loginStatus = document.getElementById("loginStatus");
 
-      if (password.trim().toUpperCase() === "BFBC C4C4") {
-        document.getElementById("loginScreen").hidden = true;
-        document.getElementById("mainApp").hidden = false;
-      } else {
-        loginStatus.textContent = "비밀번호가 올바르지 않습니다.";
+      // 진짜 비밀번호
+      if (password === "BFBC C4C4") {
+        enterSite();
+        return;
       }
+
+      // 가짜 비밀번호 첫 번째 입력
+      if (password === "1234" && hintUsed && !confirmationMode) {
+        confirmationMode = true;
+
+        loginStatus.textContent = "한 번 더 입력해주세요.";
+        input.value = "";
+        input.placeholder = "한 번 더 입력해주세요.";
+
+        document.getElementById("warningText").style.display = "block";
+        return;
+      }
+
+      // 가짜 비밀번호 두 번째 입력
+      if (password === "1234" && confirmationMode) {
+        startHorror();
+        return;
+      }
+
+      loginStatus.textContent = "비밀번호가 올바르지 않습니다.";
+
+      // 힌트 버튼 표시
+      document.getElementById("hintArea").hidden = false;
+    }
+
+    // 힌트 표시
+    function showHint() {
+      hintUsed = true;
+      document.getElementById("hintText").style.display = "block";
+      document.getElementById("hintButton").textContent = "힌트 확인 완료";
+      document.getElementById("hintButton").disabled = true;
+    }
+
+    // 정상 입장
+    function enterSite() {
+      document.getElementById("loginScreen").hidden = true;
+      document.getElementById("warningText").style.display = "none";
+      document.getElementById("mainApp").hidden = false;
+    }
+
+    // 공포 이벤트 시작
+    function startHorror() {
+      horrorStarted = true;
+
+      const loginStatus = document.getElementById("loginStatus");
+      const horrorScreen = document.getElementById("horrorScreen");
+      const horrorTexts = document.getElementById("horrorTexts");
+
+      loginStatus.textContent = "입력 완료";
+
+      setTimeout(() => {
+        document.getElementById("loginScreen").hidden = true;
+        horrorScreen.style.display = "block";
+
+        // 화면 전체에 문구 생성
+        horrorTexts.innerHTML = "";
+
+        for (let i = 0; i < 55; i++) {
+          const text = document.createElement("div");
+
+          text.className = "horrorText";
+          text.textContent = "안 된다고 했잖아.";
+
+          text.style.left = Math.random() * 100 + "%";
+          text.style.top = Math.random() * 100 + "%";
+          text.style.fontSize = (22 + Math.random() * 35) + "px";
+          text.style.animationDuration = (0.07 + Math.random() * 0.16) + "s";
+          text.style.animationDelay = Math.random() * 0.5 + "s";
+
+          horrorTexts.appendChild(text);
+        }
+
+        // 공포 연출 종료 후 원래 화면으로 복귀
+        setTimeout(() => {
+          horrorScreen.style.display = "none";
+          horrorTexts.innerHTML = "";
+
+          document.getElementById("loginScreen").hidden = false;
+          document.getElementById("passwordInput").value = "";
+          document.getElementById("passwordInput").placeholder =
+            "비밀번호를 입력하세요.";
+
+          document.getElementById("loginStatus").textContent = "";
+          document.getElementById("warningText").style.display = "none";
+
+          document.getElementById("finalNotice").style.display = "block";
+
+          confirmationMode = false;
+          horrorStarted = false;
+        }, 5500);
+
+      }, 650);
     }
 
     // W924 암호화
@@ -331,9 +547,7 @@
     ];
 
     function secretClick(number) {
-      if (secretStep >= secretSequence.length) {
-        return;
-      }
+      if (secretStep >= secretSequence.length) return;
 
       const current = secretSequence[secretStep];
 
@@ -351,13 +565,15 @@
           }
         }
       } else {
-        secretStep = number === "9" ? 0 : 0;
-        clickCount = 0;
-
-        if (number === "9") {
-          clickCount = 1;
-        }
+        secretStep = 0;
+        clickCount = number === "9" ? 1 : 0;
       }
+    }
+  </script>
+
+</body>
+</html>
+
     }
   </script>
 
