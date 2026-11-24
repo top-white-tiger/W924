@@ -17,7 +17,6 @@
       margin: 0;
       padding: 40px 20px;
       color: #222;
-      transition: background 0.5s;
     }
 
     .container {
@@ -32,7 +31,6 @@
     h1 {
       text-align: center;
       color: #263b70;
-      cursor: default;
       user-select: none;
     }
 
@@ -72,6 +70,11 @@
       background: #20376e;
     }
 
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
     .copy {
       background: #606b80;
     }
@@ -99,38 +102,39 @@
 
     /* 비밀번호 화면 */
     #loginScreen {
-      max-width: 400px;
-      margin: 10vh auto;
+      max-width: 570px;
+      min-height: 420px;
+      margin: 0 auto;
       background: white;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px #00000010;
+      padding: 45px;
+      border-radius: 22px;
+      box-shadow: 0 4px 30px #00000010;
       text-align: center;
-      position: relative;
     }
 
     #loginScreen h2 {
       color: #263b70;
+      margin-top: 20px;
     }
 
     #passwordInput {
       width: 100%;
-      padding: 14px;
+      padding: 17px;
       border: 1px solid #ccc;
-      border-radius: 9px;
-      font-size: 16px;
-      margin-top: 12px;
+      border-radius: 12px;
+      font-size: 17px;
+      margin-top: 35px;
     }
 
     #loginStatus {
       color: #b33;
-      margin-top: 12px;
+      margin-top: 15px;
       min-height: 20px;
     }
 
     /* 힌트 */
     #hintArea {
-      margin-top: 20px;
+      margin-top: 18px;
     }
 
     #hintButton {
@@ -140,13 +144,13 @@
     #hintText {
       display: none;
       margin-top: 14px;
-      padding: 14px;
+      padding: 15px;
       background: #f0f2f7;
       border-radius: 9px;
       color: #304b91;
     }
 
-    /* 재입력 화면의 경고 */
+    /* 재입력 화면 경고 */
     #warningText {
       position: fixed;
       bottom: 14px;
@@ -158,11 +162,11 @@
       display: none;
     }
 
-    /* 마지막 안내 */
+    /* 공포 연출 후 안내 */
     #finalNotice {
       display: none;
-      margin-top: 24px;
-      padding: 13px;
+      margin-top: 25px;
+      padding: 15px;
       background: #f0f2f7;
       border-radius: 9px;
       font-size: 13px;
@@ -187,7 +191,7 @@
       opacity: 0.45;
     }
 
-    /* 공포 연출 화면 */
+    /* 공포 화면 */
     #horrorScreen {
       display: none;
       position: fixed;
@@ -197,48 +201,111 @@
       overflow: hidden;
     }
 
+    /* 순서대로 나타나는 문장 줄 */
+    .horrorRow {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      padding: 0 12px;
+      overflow: visible;
+      white-space: nowrap;
+    }
+
+    .horrorRow.center {
+      justify-content: center;
+    }
+
+    .horrorText {
+      color: #ff1717;
+      font-weight: 900;
+      font-size: clamp(17px, 3.5vw, 32px);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* 마지막 혼란 단계 */
+    .chaosText {
+      position: absolute;
+      color: #ff1717;
+      font-weight: 900;
+      white-space: nowrap;
+      font-size: clamp(20px, 4vw, 42px);
+      animation: chaosShake 0.1s infinite alternate;
+      user-select: none;
+    }
+
     #horrorTitle {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       color: #ff1717;
-      font-size: clamp(28px, 7vw, 72px);
+      font-size: clamp(28px, 7vw, 65px);
       font-weight: 900;
       white-space: nowrap;
-      text-align: center;
       z-index: 2;
       animation: titleShake 0.09s infinite;
     }
 
-    .horrorText {
-      position: absolute;
-      color: #ff1717;
-      font-weight: 900;
-      white-space: nowrap;
-      font-size: clamp(18px, 4vw, 42px);
-      animation: textShake 0.12s infinite alternate;
-      user-select: none;
-    }
-
     @keyframes titleShake {
-      0% { transform: translate(-50%, -50%) rotate(-1deg); }
-      25% { transform: translate(-51%, -49%) rotate(1deg); }
-      50% { transform: translate(-49%, -51%) rotate(-1.5deg); }
-      75% { transform: translate(-50%, -50%) rotate(1deg); }
-      100% { transform: translate(-51%, -50%) rotate(0deg); }
+      0% {
+        transform: translate(-50%, -50%) rotate(-1deg);
+      }
+      25% {
+        transform: translate(-51%, -49%) rotate(1deg);
+      }
+      50% {
+        transform: translate(-49%, -51%) rotate(-1.5deg);
+      }
+      75% {
+        transform: translate(-50%, -50%) rotate(1deg);
+      }
+      100% {
+        transform: translate(-51%, -50%) rotate(0deg);
+      }
     }
 
-    @keyframes textShake {
-      0% { transform: translate(0, 0) rotate(-2deg) scale(1); }
-      25% { transform: translate(3px, -2px) rotate(2deg) scale(1.03); }
-      50% { transform: translate(-3px, 2px) rotate(-1deg) scale(1.06); }
-      75% { transform: translate(2px, 3px) rotate(2deg) scale(1.02); }
-      100% { transform: translate(-2px, -3px) rotate(-2deg) scale(1.08); }
+    @keyframes chaosShake {
+      0% {
+        transform: translate(0, 0) rotate(-2deg);
+      }
+      25% {
+        transform: translate(3px, -2px) rotate(2deg);
+      }
+      50% {
+        transform: translate(-3px, 2px) rotate(-1deg);
+      }
+      75% {
+        transform: translate(2px, 3px) rotate(2deg);
+      }
+      100% {
+        transform: translate(-2px, -3px) rotate(-2deg);
+      }
     }
 
     [hidden] {
       display: none !important;
+    }
+
+    @media (max-width: 500px) {
+      #loginScreen {
+        padding: 30px 22px;
+        min-height: 380px;
+      }
+
+      .horrorRow {
+        gap: 6px;
+        padding: 0 5px;
+      }
+
+      .horrorRow .horrorText {
+        font-size: 17px;
+      }
     }
   </style>
 </head>
@@ -273,7 +340,7 @@
     </div>
   </div>
 
-  <!-- 재입력 경고 -->
+  <!-- 오른쪽 아래 경고 -->
   <div id="warningText">입력하면 안 돼</div>
 
   <!-- 메인 화면 -->
@@ -302,10 +369,11 @@
     <p id="status"></p>
   </div>
 
-  <!-- 공포 연출 -->
+  <!-- 공포 연출 화면 -->
   <div id="horrorScreen">
     <div id="horrorTitle">안 된다고 했잖아.</div>
-    <div id="horrorTexts"></div>
+    <div id="horrorRows"></div>
+    <div id="chaosTexts"></div>
   </div>
 
   <!-- 이스터에그 -->
@@ -317,8 +385,8 @@
 
   <script>
     // 비밀번호 상태
-    let confirmationMode = false;
     let hintUsed = false;
+    let confirmationMode = false;
     let horrorStarted = false;
 
     // 비밀번호 확인
@@ -354,14 +422,13 @@
       }
 
       loginStatus.textContent = "비밀번호가 올바르지 않습니다.";
-
-      // 힌트 버튼 표시
       document.getElementById("hintArea").hidden = false;
     }
 
     // 힌트 표시
     function showHint() {
       hintUsed = true;
+
       document.getElementById("hintText").style.display = "block";
       document.getElementById("hintButton").textContent = "힌트 확인 완료";
       document.getElementById("hintButton").disabled = true;
@@ -374,13 +441,24 @@
       document.getElementById("mainApp").hidden = false;
     }
 
-    // 공포 이벤트 시작
+    // 문장 생성
+    function createHorrorText(parent, className) {
+      const text = document.createElement("div");
+      text.className = className;
+      text.textContent = "안 된다고 했잖아.";
+      parent.appendChild(text);
+      return text;
+    }
+
+    // 공포 연출 시작
     function startHorror() {
       horrorStarted = true;
 
       const loginStatus = document.getElementById("loginStatus");
       const horrorScreen = document.getElementById("horrorScreen");
-      const horrorTexts = document.getElementById("horrorTexts");
+      const horrorRows = document.getElementById("horrorRows");
+      const chaosTexts = document.getElementById("chaosTexts");
+      const horrorTitle = document.getElementById("horrorTitle");
 
       loginStatus.textContent = "입력 완료";
 
@@ -388,44 +466,106 @@
         document.getElementById("loginScreen").hidden = true;
         horrorScreen.style.display = "block";
 
-        // 화면 전체에 문구 생성
-        horrorTexts.innerHTML = "";
+        horrorRows.innerHTML = "";
+        chaosTexts.innerHTML = "";
+        horrorTitle.style.display = "none";
 
-        for (let i = 0; i < 55; i++) {
-          const text = document.createElement("div");
+        runOrderedHorror();
+      }, 650);
+    }
 
-          text.className = "horrorText";
-          text.textContent = "안 된다고 했잖아.";
+    // 1개 → 2개 → 3개 순서로 증가하는 단계
+    function runOrderedHorror() {
+      const horrorRows = document.getElementById("horrorRows");
+      const horrorTitle = document.getElementById("horrorTitle");
 
-          text.style.left = Math.random() * 100 + "%";
-          text.style.top = Math.random() * 100 + "%";
-          text.style.fontSize = (22 + Math.random() * 35) + "px";
-          text.style.animationDuration = (0.07 + Math.random() * 0.16) + "s";
-          text.style.animationDelay = Math.random() * 0.5 + "s";
+      let rowNumber = 0;
+      const rowHeight = 46;
 
-          horrorTexts.appendChild(text);
+      function addRow() {
+        const y = 12 + rowNumber * rowHeight;
+
+        // 화면 아래에 도달하면 혼란 단계 시작
+        if (y + rowHeight > window.innerHeight - 12) {
+          runChaosHorror();
+          return;
         }
 
-        // 공포 연출 종료 후 원래 화면으로 복귀
-        setTimeout(() => {
-          horrorScreen.style.display = "none";
-          horrorTexts.innerHTML = "";
+        const row = document.createElement("div");
+        row.className = "horrorRow";
 
-          document.getElementById("loginScreen").hidden = false;
-          document.getElementById("passwordInput").value = "";
-          document.getElementById("passwordInput").placeholder =
-            "비밀번호를 입력하세요.";
+        // 줄마다 왼쪽 또는 중앙 정렬
+        if (rowNumber % 2 === 1) {
+          row.classList.add("center");
+        }
 
-          document.getElementById("loginStatus").textContent = "";
-          document.getElementById("warningText").style.display = "none";
+        row.style.top = y + "px";
 
-          document.getElementById("finalNotice").style.display = "block";
+        // 1개, 2개, 3개... 점점 증가
+        const count = rowNumber + 1;
 
-          confirmationMode = false;
-          horrorStarted = false;
-        }, 5500);
+        for (let i = 0; i < count; i++) {
+          createHorrorText(row, "horrorText");
+        }
 
-      }, 650);
+        horrorRows.appendChild(row);
+        rowNumber++;
+
+        // 점점 빠르게 나타나도록 간격 감소
+        const delay = Math.max(65, 520 - rowNumber * 28);
+
+        setTimeout(addRow, delay);
+      }
+
+      addRow();
+    }
+
+    // 화면이 가득 찬 뒤 불규칙하게 흔들리는 단계
+    function runChaosHorror() {
+      const horrorRows = document.getElementById("horrorRows");
+      const chaosTexts = document.getElementById("chaosTexts");
+      const horrorTitle = document.getElementById("horrorTitle");
+
+      horrorTitle.style.display = "block";
+
+      // 기존 줄은 남겨두고 불규칙한 문장 추가
+      for (let i = 0; i < 45; i++) {
+        const text = createHorrorText(chaosTexts, "chaosText");
+
+        text.style.left = Math.random() * 90 + "%";
+        text.style.top = Math.random() * 95 + "%";
+        text.style.fontSize = (20 + Math.random() * 35) + "px";
+        text.style.animationDuration =
+          (0.06 + Math.random() * 0.14) + "s";
+        text.style.animationDelay = Math.random() * 0.3 + "s";
+      }
+
+      // 잠시 뒤 원래 화면으로 복귀
+      setTimeout(() => {
+        finishHorror();
+      }, 2800);
+    }
+
+    // 공포 연출 종료
+    function finishHorror() {
+      document.getElementById("horrorScreen").style.display = "none";
+      document.getElementById("horrorRows").innerHTML = "";
+      document.getElementById("chaosTexts").innerHTML = "";
+      document.getElementById("horrorTitle").style.display = "none";
+
+      document.getElementById("loginScreen").hidden = false;
+
+      const input = document.getElementById("passwordInput");
+      input.value = "";
+      input.placeholder = "비밀번호를 입력하세요.";
+
+      document.getElementById("loginStatus").textContent = "";
+      document.getElementById("warningText").style.display = "none";
+
+      document.getElementById("finalNotice").style.display = "block";
+
+      confirmationMode = false;
+      horrorStarted = false;
     }
 
     // W924 암호화
@@ -568,12 +708,6 @@
         secretStep = 0;
         clickCount = number === "9" ? 1 : 0;
       }
-    }
-  </script>
-
-</body>
-</html>
-
     }
   </script>
 
